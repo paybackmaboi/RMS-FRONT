@@ -61,7 +61,7 @@ function StudentLogin({ onLoginSuccess, onSwitchToRegister, onSwitchToAdmin, onS
                 setError(errorData.message || 'Login failed. Please check your credentials.');
             }
         } catch (err) {
-            setError('Network error. Please check your connection and try again.');
+            setError('Networksss errorssss. Please check your connection and try again.');
         } finally {
             setLoading(false);
         }
