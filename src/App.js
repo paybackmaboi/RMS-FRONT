@@ -40,6 +40,7 @@ import DocumentApprovalModal from './components/admin/DocumentApprovalModal';
 import RequestFromRegistrarView from './components/admin/RequestFromRegistrarView';
 import { createDummyRegistrations } from './data/dummyData';
 import { getUserRole } from './utils/api';
+import StudentHomePage from './components/student/StudentHomePage';
 
 const AdminLayout = ({ onProfileClick, setStudentToEnroll }) => (
   <div className="admin-layout">
