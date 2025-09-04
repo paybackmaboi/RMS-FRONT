@@ -80,6 +80,7 @@ function StudentRegistrationForm() {
         lastCollegeMajor: '',
         
         // Course Information
+        courseId: '',
         course: 'Bachelor of Science in Information Technology',
         major: 'Information Technology'
     });
@@ -87,6 +88,11 @@ function StudentRegistrationForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    
+    // State for dropdown data
+    const [courses, setCourses] = useState([]);
+    const [schoolYears, setSchoolYears] = useState([]);
+    const [loadingData, setLoadingData] = useState(true);
     
     // Get session token from localStorage
     const sessionToken = localStorage.getItem('sessionToken');
@@ -107,12 +113,79 @@ function StudentRegistrationForm() {
         { value: 'Summer', label: 'Summer' }
     ];
 
+    // Fetch courses and school years on component mount
+    useEffect(() => {
+        const fetchDropdownData = async () => {
+            try {
+                setLoadingData(true);
+                
+                // Fetch courses
+                const coursesResponse = await fetch(`${API_BASE_URL}/courses`);
+                if (coursesResponse.ok) {
+                    const coursesData = await coursesResponse.json();
+                    console.log('📚 Fetched courses:', coursesData);
+                    setCourses(coursesData);
+                    
+                    // Set BSIT as default if available
+                    const bsitCourse = coursesData.find(course => course.code === 'BSIT');
+                    if (bsitCourse) {
+                        console.log('🎯 Setting BSIT as default course:', bsitCourse);
+                        setFormData(prev => ({
+                            ...prev,
+                            courseId: bsitCourse.id.toString(),
+                            course: bsitCourse.name
+                        }));
+                    }
+                } else {
+                    console.error('❌ Failed to fetch courses:', coursesResponse.status, coursesResponse.statusText);
+                }
+                
+                // Fetch school years
+                const schoolYearsResponse = await fetch(`${API_BASE_URL}/school-years`);
+                if (schoolYearsResponse.ok) {
+                    const schoolYearsData = await schoolYearsResponse.json();
+                    console.log('📅 Fetched school years:', schoolYearsData);
+                    setSchoolYears(schoolYearsData);
+                    
+                    // Set the current school year as default if available
+                    const currentSchoolYear = schoolYearsData.find(sy => sy.isCurrent);
+                    if (currentSchoolYear) {
+                        console.log('🎯 Setting current school year as default:', currentSchoolYear);
+                        setFormData(prev => ({
+                            ...prev,
+                            schoolYear: currentSchoolYear.year
+                        }));
+                    }
+                } else {
+                    console.error('❌ Failed to fetch school years:', schoolYearsResponse.status, schoolYearsResponse.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching dropdown data:', error);
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        fetchDropdownData();
+    }, []);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        // If course is selected, also update the course name
+        if (name === 'courseId') {
+            const selectedCourse = courses.find(course => course.id.toString() === value);
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+                course: selectedCourse ? selectedCourse.name : prev.course
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -130,8 +203,8 @@ function StudentRegistrationForm() {
             }
             
             // Validate required fields
-            if (!formData.firstName || !formData.lastName || !formData.yearLevel) {
-                setError('Please fill in all required fields');
+            if (!formData.firstName || !formData.lastName || !formData.yearLevel || !formData.courseId || !formData.schoolYear) {
+                setError('Please fill in all required fields (Name, Year Level, Course, and School Year)');
                 setLoading(false);
                 return;
             }
@@ -159,13 +232,13 @@ function StudentRegistrationForm() {
                         motherName: '', motherAddress: '', motherOccupation: '', motherCompany: '',
                         motherContactNumber: '', motherIncome: '', guardianName: '', guardianAddress: '',
                         guardianOccupation: '', guardianCompany: '', guardianContactNumber: '', guardianIncome: '',
-                        yearLevel: '', semester: '1st', schoolYear: '2025-2026', applicationType: 'Freshmen',
+                        yearLevel: '', semester: '1st', schoolYear: '', applicationType: 'Freshmen',
                         studentType: 'First', elementarySchool: '', elementaryAddress: '', elementaryHonor: '',
                         elementaryYearGraduated: '', juniorHighSchool: '', juniorHighAddress: '', juniorHighHonor: '',
                         juniorHighYearGraduated: '', seniorHighSchool: '', seniorHighAddress: '', seniorHighStrand: '',
                         seniorHighHonor: '', seniorHighYearGraduated: '', ncaeGrade: '', specialization: '',
                         lastCollegeAttended: '', lastCollegeYearTaken: '', lastCollegeCourse: '', lastCollegeMajor: '',
-                        course: 'Bachelor of Science in Information Technology', major: 'Information Technology'
+                        courseId: '', course: 'Bachelor of Science in Information Technology', major: 'Information Technology'
                     });
                     setCurrentStep(1);
                 }, 3000);
@@ -511,6 +584,48 @@ function StudentRegistrationForm() {
             <h3>Review & Submit</h3>
             <div className="review-container">
                 <div className="row g-3">
+                    <div className="col-md-6">
+                        <label className="form-label">Course *</label>
+                        <select
+                            className="form-select"
+                            name="courseId"
+                            value={formData.courseId}
+                            onChange={handleInputChange}
+                            required
+                            disabled={loadingData}
+                        >
+                            <option value="">Select Course</option>
+                            {courses.map(course => (
+                                <option key={course.id} value={course.id}>
+                                    {course.name}
+                                </option>
+                            ))}
+                        </select>
+                        {loadingData && <small className="text-muted">Loading courses...</small>}
+                        {!loadingData && courses.length === 0 && <small className="text-warning">No courses available</small>}
+                        {!loadingData && courses.length > 0 && <small className="text-muted">{courses.length} courses loaded</small>}
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label">School Year *</label>
+                        <select
+                            className="form-select"
+                            name="schoolYear"
+                            value={formData.schoolYear}
+                            onChange={handleInputChange}
+                            required
+                            disabled={loadingData}
+                        >
+                            <option value="">Select School Year</option>
+                            {schoolYears.map(schoolYear => (
+                                <option key={schoolYear.id} value={schoolYear.year}>
+                                    {schoolYear.year} {schoolYear.isCurrent ? '(Current)' : ''}
+                                </option>
+                            ))}
+                        </select>
+                        {loadingData && <small className="text-muted">Loading school years...</small>}
+                        {!loadingData && schoolYears.length === 0 && <small className="text-warning">No school years available</small>}
+                        {!loadingData && schoolYears.length > 0 && <small className="text-muted">{schoolYears.length} school years loaded</small>}
+                    </div>
                     <div className="col-md-6">
                         <label className="form-label">Year Level *</label>
                         <select

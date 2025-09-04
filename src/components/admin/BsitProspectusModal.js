@@ -16,6 +16,7 @@ function BsitProspectusModal({ isOpen, onClose, studentName }) {
   const fetchCurriculum = async () => {
     try {
       setLoading(true);
+      setError(null); // Reset error on new fetch
       const response = await fetch(`${API_BASE_URL}/bsit-curriculum`, {
         headers: {
           'X-Session-Token': getSessionToken()
@@ -36,12 +37,17 @@ function BsitProspectusModal({ isOpen, onClose, studentName }) {
     }
   };
 
+  // --- START: FIX ---
+  // Updated the grouping function to use the nested Semester object
   const groupCurriculumByYear = () => {
     const grouped = {};
     curriculum.forEach(course => {
       const year = course.yearLevel;
-      const sem = course.semester;
-      
+      // Get the semester name from the included 'Semester' object
+      const sem = course.Semester?.name; 
+
+      if (!year || !sem) return; // Skip if data is incomplete
+
       if (!grouped[year]) {
         grouped[year] = {};
       }
@@ -53,24 +59,21 @@ function BsitProspectusModal({ isOpen, onClose, studentName }) {
     });
     return grouped;
   };
+  // --- END: FIX ---
 
   const getYearLevelDisplay = (year) => {
     const yearMap = {
-      '1st': 'First Year',
-      '2nd': 'Second Year',
-      '3rd': 'Third Year',
-      '4th': 'Fourth Year'
+      '1st Year': 'First Year',
+      '2nd Year': 'Second Year',
+      '3rd Year': 'Third Year',
+      '4th Year': 'Fourth Year'
     };
     return yearMap[year] || year;
   };
-
+  
+  // This function is now simpler as it receives the full semester name
   const getSemesterDisplay = (sem) => {
-    const semMap = {
-      '1st': 'First Semester',
-      '2nd': 'Second Semester',
-      'summer': 'Summer Term'
-    };
-    return semMap[sem] || sem;
+    return sem;
   };
 
   const calculateTotalUnits = (courses) => {

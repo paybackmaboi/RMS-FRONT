@@ -85,7 +85,6 @@ function StudentDetailView({ enrolledStudents }) {
           }
         }
 
-        // --- START: Fetch student registration data for personal details ---
         try {
           console.log('🔍 Fetching registration data for student ID:', enrolledStudent.id);
           console.log('🔗 API URL:', `${API_BASE_URL}/students/registration/${enrolledStudent.id}`);
@@ -110,9 +109,6 @@ function StudentDetailView({ enrolledStudents }) {
         } catch (error) {
           console.error("Error fetching student registration:", error);
         }
-        // --- END: Fetch registration data ---
-
-        // --- START: Fetch enrolled subjects for this student ---
         try {
           console.log('📚 Fetching enrolled subjects for student ID:', enrolledStudent.id);
           const subjectsResponse = await fetch(`${API_BASE_URL}/students/enrolled-subjects/${enrolledStudent.id}`, {
@@ -122,7 +118,6 @@ function StudentDetailView({ enrolledStudents }) {
           if (subjectsResponse.ok) {
               const subjectsData = await subjectsResponse.json();
               console.log('📋 Enrolled Subjects Data:', subjectsData);
-              // Set the entire subjects data (includes yearLevel, semester, totalUnits, subjects array)
               setEnrolledSubjects(subjectsData);
           } else {
               console.error("Failed to fetch enrolled subjects. Status:", subjectsResponse.status);
@@ -130,9 +125,7 @@ function StudentDetailView({ enrolledStudents }) {
         } catch (error) {
           console.error("Error fetching enrolled subjects:", error);
         }
-        // --- END: Fetch enrolled subjects ---
 
-        // --- START: Fetch the document requests for this student ---
         try {
           const requestsResponse = await fetch(`${API_BASE_URL}/requests/student/${enrolledStudent.id}`, {
               headers: { 'X-Session-Token': getSessionToken() }
@@ -1047,7 +1040,7 @@ function StudentDetailView({ enrolledStudents }) {
 
   <div className="card shadow-sm border-0">
             <div className="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Enrolled Subjects</h5>
+                <h5 className="mb-0">Enrolled Subjects from Registration form</h5>
                 <div className="d-flex align-items-center">
                                          <select 
                          className="form-select form-select-sm me-2" 
@@ -1070,7 +1063,7 @@ function StudentDetailView({ enrolledStudents }) {
                 <table className="table table-hover table-sm">
                                      <thead>
                      <tr>
-                       <th>Course Code & Title</th>
+                       <th>Subject</th>
                        <th className="text-center">Units</th>
                        <th className="text-center">Final Grade</th>
                        <th className="text-center">Status</th>

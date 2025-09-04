@@ -38,7 +38,7 @@ function AllStudentsView({ enrolledStudents }) {
 
             <div className="card shadow-sm">
                 <div className="card-header bg-white">
-                    <h4 className="card-title mb-0">Student List</h4>
+                    <h4 className="card-title mb-0">Student Lissst</h4>
                 </div>
                 <div className="card-body">
                      <div className="row mb-3">
