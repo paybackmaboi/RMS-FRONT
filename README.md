@@ -1,7 +1,6 @@
 *Register Management for Hotel Booking*
 
 *Feedback(s):*
- 
 
 * The UI is unresponsive (Touch Screen Device).
 * Buttons are not working (Hotel, Rooms, About, etc.).
@@ -12,24 +11,29 @@
 
 ---
 
+*Computer Laboratory Inventory*
 
+* Use a standard or normal font size for text element to ensure readability and proper visibility across all screen.
+* The quantity field encountered an error, as it did not increase to 2 when attempted.
+* The view guest should be removed.
+* In disposal records the number of buttons in the Action column should be reduced.
 
-August 1, 2025 (Friday)
-- This day i created and edited Student's side account like adding 3 buttons to separate the Home,
-Request, and My Request and many more.
+---
 
-August 2-3, 2025 (Saturday & Sunday)
-- Working on the Student's Profile UIs and features.
+*Voting System*
 
-August 15, 2025 (Friday)
-- Redesigning the Login form UI and Student's account UIs making it responsive to any kind of device screens.
+* The vote limit is set or static or fixed at 1 when adding positions.
+* A bug prevents adding or inputting a candidate.
+* Bug in creating new election when it inputs a name and date.
 
-August 23-24, 2025 (Saturday-Sunday)
-- Major changes for the Request Management's features/functions like the Approval and Rejection process. and the addition of DIPLOMA option in student side request form.
+*Grading System*
 
-August 29, 2025 (Friday)
-- Making the navbar responsive and user friendly.
+* The UI is just simple, no decorations, and small boxes.
+* The system should notify the Registrar when grade locking is in progress.
+* The super Admin should have the ability to reset grade locking in case it reaches the limit.
 
+*Library System*
 
-
-
+At the bottom, instead of 'Your account has been blocked,' what appears is 'Invalid' footer
+- There should be an accreditation feature in PACUCOA to ensure compliance with academic quality standards.
+- A restriction (filter or “trap”) should be added so that students cannot use the AI to search for topics that are not related to their course.
