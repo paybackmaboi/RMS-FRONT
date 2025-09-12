@@ -105,15 +105,16 @@ function StudentRequestForm() {
                   <label htmlFor="documentType" className="form-label">Document Type</label>
                   <select className="form-select border border-2 rounded-pill" id="documentType" value={documentType} onChange={(e) => setDocumentType(e.target.value)} required>
                     <option value="" disabled>Select...</option>
-                    <option value="TOR">TOR</option>
-                    <option value="GRADE SLIP">GRADE SLIP</option>
-                    <option value="GWA CERTIFICATE">GWA CERTIFICATE</option>
-                    <option value="GOOD MORAL FOR GRADUATES">GOOD MORAL FOR GRADUATES</option>
-                    <option value="GOOD MORAL FOR NON-GRADUATES">GOOD MORAL FOR NON-GRADUATES</option>
-                    <option value="CERTIFICATE OF ENROLLMENT">CERTIFICATE OF ENROLLMENT</option>
-                    <option value="CERTIFICATE OF GRADUATION">CERTIFICATE OF GRADUATION</option>
-                    <option value="CERTIFICATE OF GRADUATION WITH HONORS">CERTIFICATE OF GRADUATION WITH HONORS</option>
-                    <option value="DIPLOMA">DIPLOMA</option>
+                    <option value="TOR">Transcript of Records</option>
+                    <option value="GRADE SLIP">Grade Slip</option>
+                    <option value="GWA CERTIFICATE">GWA Certificate</option>
+                    <option value="GOOD MORAL FOR GRADUATES">Good Moral for Graduates</option>
+                    <option value="GOOD MORAL FOR NON-GRADUATES">Good Moral for Non-Graduates</option>
+                    <option value="CERTIFICATE OF ENROLLMENT">Certificate of Enrollment</option>
+                    <option value="CERTIFICATE OF GRADUATION">Certificate of Graduation</option>
+                    <option value="CERTIFICATE OF GRADUATION WITH HONORS">Certificate of Graduation with Honors</option>
+                    <option value="CERTIFICATE OF TRANSFER CREDENTIALS">Certificate of Transfer Credentials - Honorable Dismissal</option>
+                    <option value="DIPLOMA">Diploma</option>
                   </select>
                 </div>
 

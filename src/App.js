@@ -331,7 +331,7 @@ function App() {
                     <img
                       src={localStorage.getItem('profileImage') || '/bc.png'}
                       alt="Profile"
-                      style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', background: '#eee' }}
+                      style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #fff', background: '#eee' }}
                     />
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">

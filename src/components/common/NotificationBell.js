@@ -56,7 +56,7 @@ function NotificationBell() {
 
   return (
     <div className="notification-bell" ref={bellRef}>
-      <button onClick={() => setIsOpen(!isOpen)} className="btn btn-link text-white position-relative">
+      <button onClick={() => { setIsOpen(!isOpen); if (!isOpen) handleMarkAsRead(); }} className="btn btn-link text-white position-relative">
         <i className="fa-solid fa-bell fa-lg"></i>
         {unreadCount > 0 && <span className="badge bg-danger notification-badge">{unreadCount}</span>}
       </button>

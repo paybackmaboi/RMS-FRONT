@@ -27,7 +27,7 @@ const generateDocumentContent = (request) => {
         case 'GOOD MORAL FOR GRADUATES':
             return `
                 <style>
-                    .good-moral-preview { font-family: serif; }
+                    .good-moral-preview, .good-moral-preview * { font-family: Arial, sans-serif !important; }
                     .good-moral-preview .header-row {
                         display: flex;
                         align-items: center;
@@ -70,7 +70,7 @@ const generateDocumentContent = (request) => {
     case 'GOOD MORAL FOR NON-GRADUATES':
             return `
                 <style>
-                    .good-moral-preview { font-family: serif; }
+                    .good-moral-preview, .good-moral-preview * { font-family: Arial, sans-serif !important; }
                     .good-moral-preview .header-row {
                         display: flex;
                         align-items: center;
@@ -112,58 +112,88 @@ const generateDocumentContent = (request) => {
             `;
 
         case 'GRADE SLIP':
-             const currentSemesterGrades = gradesData[0];
-             let totalUnits = 0, totalWeight = 0;
-             currentSemesterGrades.subjects.forEach(sub => {
-                 const grade = parseFloat(sub.grade);
-                 totalUnits += sub.units;
-                 if (!isNaN(grade)) { totalWeight += grade * sub.units; }
-             });
-             const weightedAverage = totalWeight > 0 ? (totalWeight / totalUnits).toFixed(4) : 'N/A';
+            const currentSemesterGrades = gradesData[0];
+            let totalUnits = 0;
+            const rowsHtml = currentSemesterGrades.subjects.map(sub => {
+                const units = Number(sub.units) || 0;
+                totalUnits += units;
+                const lec = units >= 4 ? 3 : units; // simple split similar to many curricula
+                const lab = units >= 4 ? units - 3 : 0;
+                return `<tr>
+                            <td class="text-center">${sub.code}</td>
+                            <td>${sub.desc}</td>
+                            <td class="text-center">${lec}</td>
+                            <td class="text-center">${lab}</td>
+                            <td class="text-center">${sub.grade}</td>
+                        </tr>`;
+            }).join('');
             return `
                 <style>
-                     .gradeslip-preview { font-family: Arial, sans-serif; }
-                     .gradeslip-preview .gradeslip-container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; }
-                     .gradeslip-preview .gradeslip-header { 
-                     display: flex; 
-                     align-items: center; 
-                     justify-content: center;
-                     gap:40px;
-                     text-align: center; 
-                     border-bottom: 2px solid black; 
-                     padding-bottom: 10px; 
-                     margin-bottom: 20px; 
-                     }
-                     .gradeslip-preview .logo { width: 60px; height: 60px; }
-                     .gradeslip-preview h2, .gradeslip-preview p, .gradeslip-preview h3 { margin: 0; line-height: 1.2; }
-                     .gradeslip-preview .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; font-size: 11pt; }
-                     .gradeslip-preview .info-table td { padding: 5px; }
-                     .gradeslip-preview .grades-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                     .gradeslip-preview .grades-table th, .gradeslip-preview .grades-table td { border: 1px solid #000; padding: 8px; text-align: left; }
-                     .gradeslip-preview .grades-table thead { background-color: #f2f2f2; }
-                     .gradeslip-preview .text-center { text-align: center; }
-                     .gradeslip-preview .text-right { text-align: right; }
+                    /* Force Arial across the entire grade slip content */
+                    .gradeslip-cert, .gradeslip-cert * { font-family: Arial, sans-serif !important; }
+                    /* Add generous page margins for both screen and print */
+                    .gradeslip-cert .print-container { 
+                        max-width: 8.27in; /* A4 width */
+                        margin: 0 auto; 
+                        padding: 0.75in; /* comfortable inner margins */
+                        box-sizing: border-box;
+                    }
+                    @media print {
+                        @page { margin: 0.5in; }
+                        .gradeslip-cert .print-container { padding: 0.5in; }
+                    }
+                    .gradeslip-cert .header-row { display: flex; align-items: center; margin-bottom: 0; }
+                    .gradeslip-cert .headerlogo img { width: 100%; height: 100%; }
+                    .gradeslip-cert .cert-title { text-align: center; font-size: 20pt; font-weight: bold; margin: 18px 0 10px 0; letter-spacing: 2px; padding: 80px 20px 40px 20px; }
+                    .gradeslip-cert .program-title { text-align: center; font-weight: bold; margin: 10px 0 15px 0; }
+                    .gradeslip-cert .info { margin: 0 0 10px 0; }
+                    .gradeslip-cert .grades-table { width: 100%; border-collapse: collapse; font-size: 12pt; }
+                    .gradeslip-cert .grades-table th, .gradeslip-cert .grades-table td { border: 1px solid #000; padding: 6px 8px; }
+                    .gradeslip-cert .grades-table th { text-align: center; }
+                    .gradeslip-cert .text-center { text-align: center; }
+                    .gradeslip-cert .totals-left { margin-top: 10px; font-size: 12pt; }
+                    .gradeslip-cert .footer-note { margin-top: 15px; }
+                    .gradeslip-cert .signature-block { margin-top: 40px; text-align: center; padding: 60px 85px 85px 85px; }
                 </style>
-                <div class="gradeslip-preview">
-                    <div class="gradeslip-container">
-                        <div class="gradeslip-header"><img src="/bc.png" alt="Logo" class="logo"><div><h2>BENEDICTO COLLEGE</h2><p>A.S. Fortuna Street, Mandaue City</p><h3>GRADE SLIP</h3></div><img src="/bc.png" alt="Logo" class="logo"></div>
-                        <table class="info-table">
-                            <tr><td><strong>STUDENT NAME:</strong></td><td>${studentName.toUpperCase()}</td><td><strong>STUDENT ID:</strong></td><td>${studentIdNumber}</td></tr>
-                            <tr><td><strong>COURSE:</strong></td><td>${studentCourse}</td><td><strong>ACADEMIC YEAR:</strong></td><td>${currentSemesterGrades.year}</td></tr>
-                            <tr><td><strong>SEMESTER:</strong></td><td colspan="3">${currentSemesterGrades.semester}</td></tr>
-                        </table>
+                <div class="gradeslip-cert">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcformat.png" alt="Logo"></div>
+                        </div>
+                        <div class="cert-title">CERTIFICATION</div>
+                        <p class="info"><strong>Student Name:</strong> ${studentName}</p>
+                        <p class="info"><strong>Student ID:</strong> ${studentIdNumber}</p>
+                        <p class="info"><strong>Course:</strong> ${studentCourse}</p>
+                        <p class="info"><strong>School Year / Semester:</strong> ${currentSemesterGrades.year} / ${currentSemesterGrades.semester}</p>
+                        <div class="program-title">BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY</div>
                         <table class="grades-table">
-                            <thead><tr><th>CODE</th><th>DESCRIPTION</th><th>UNITS</th><th>GRADE</th></tr></thead>
-                            <tbody>${currentSemesterGrades.subjects.map(sub => `<tr><td>${sub.code}</td><td>${sub.desc}</td><td class="text-center">${sub.units}</td><td class="text-center">${sub.grade}</td></tr>`).join('')}</tbody>
-                            <tfoot><tr><td colspan="2" class="text-right"><strong>TOTAL UNITS:</strong></td><td class="text-center"><strong>${totalUnits}</strong></td><td></td></tr><tr><td colspan="2" class="text-right"><strong>WEIGHTED AVERAGE:</strong></td><td colspan="2" class="text-center"><strong>${weightedAverage}</strong></td></tr></tfoot>
+                            <thead>
+                                <tr>
+                                    <th>Subject Code</th>
+                                    <th>Descriptive Title</th>
+                                    <th>Lec</th>
+                                    <th>Lab</th>
+                                    <th>Grades</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
                         </table>
+                        <div class="totals-left"><strong>Total Units:</strong> ${totalUnits}</div>
+                        <p class="footer-note">This certification is issued upon the request of the above-mentioned student for <b>${request.purpose || 'scholarship/application'}</b> purposes only.</p>
+                        <p class="footer-note">Issued this ${today} at Mandaue City, Cebu, Philippines.</p>
+                        <div class="signature-block">
+                            <div style="display:inline-block;text-align:center;">
+                                <p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>MARIA PERPETUA C. SAURA</b></p>
+                                <p style="margin:0;text-align:center;">School Registrar</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
         case 'GWA CERTIFICATE':
             return `
                 <style>
-                    .gwaCert-preview { font-family: serif; }
+                    .gwaCert-preview, .gwaCert-preview * { font-family: Arial, sans-serif !important; }
                     .gwaCert-preview .header-row {
                         display: flex;
                         align-items: center;
@@ -244,7 +274,7 @@ const generateDocumentContent = (request) => {
                 </div>
             `;
             const torCSS = `
-                .tor-preview { font-family: Arial, sans-serif; font-size: 11pt; }
+                .tor-preview, .tor-preview * { font-family: Arial, sans-serif !important; font-size: 11pt; }
                 .tor-preview .tor-container { max-width: 8.5in; margin: auto; padding: 0.5in; }
                 .tor-preview .tor-header { text-align: center; margin-bottom: 20px; }
                 .tor-preview .tor-logo { width: 70px; height: 70px; margin-bottom: 10px; }
@@ -392,7 +422,7 @@ const generateDocumentContent = (request) => {
         case 'CERTIFICATE OF ENROLLMENT':
             return `
             <style>
-                    .certificateofEnrollment-preview { font-family: serif; }
+                    .certificateofEnrollment-preview, .certificateofEnrollment-preview * { font-family: Arial, sans-serif !important; }
                     .certificateofEnrollment-preview .header-row {
                         display: flex;
                         align-items: center;
@@ -440,7 +470,7 @@ const generateDocumentContent = (request) => {
         case 'CERTIFICATE OF GRADUATION':
             return `
             <style>
-                    .certificateofGraduation-preview { font-family: serif; }
+                    .certificateofGraduation-preview, .certificateofGraduation-preview * { font-family: Arial, sans-serif !important; }
                     .certificateofGraduation-preview .header-row {
                         display: flex;
                         align-items: center;
@@ -490,7 +520,7 @@ const generateDocumentContent = (request) => {
         case 'CERTIFICATE OF GRADUATION WITH HONORS':
             return `
             <style>
-                    .certificateofGraduation-preview { font-family: serif; }
+                    .certificateofGraduation-preview, .certificateofGraduation-preview * { font-family: Arial, sans-serif !important; }
                     .certificateofGraduation-preview .header-row {
                         display: flex;
                         align-items: center;
@@ -536,6 +566,215 @@ const generateDocumentContent = (request) => {
                         </div>
                     </div>
                 </div>`
+        case 'CERTIFICATE OF TRANSFER CREDENTIALS':
+            return `
+                <style>
+                    .transferCRED-preview { 
+                        font-family: Arial, sans-serif; 
+                        max-width: 8.5in;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .transferCRED-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .transferCRED-preview .logo {
+                        width: 80px;
+                        height: 80px;
+                        margin-right: 20px;
+                    }
+                    .transferCRED-preview .college-info {
+                        flex: 1;
+                    }
+                    .transferCRED-preview .college-name {
+                        font-size: 24pt;
+                        font-weight: bold;
+                        color: #1e40af;
+                        margin: 0;
+                        letter-spacing: 1px;
+                    }
+                    .transferCRED-preview .motto {
+                        font-size: 12pt;
+                        font-style: italic;
+                        color: #1e40af;
+                        margin: 2px 0;
+                    }
+                    .transferCRED-preview .website {
+                        font-size: 10pt;
+                        color: #dc2626;
+                        margin: 0;
+                    }
+                    .transferCRED-preview .office-header {
+                        text-align: center;
+                        font-size: 16pt;
+                        font-weight: bold;
+                        margin: 20px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .date-right {
+                        text-align: right;
+                        font-size: 12pt;
+                        margin: 10px 0 20px 0;
+                    }
+                    .transferCRED-preview .cert-title {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin: 20px 0 5px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .cert-subtitle {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin: 0 0 20px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .salutation {
+                        font-size: 14pt;
+                        font-weight: bold;
+                        margin: 20px 0 10px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .body-text {
+                        font-size: 14pt;
+                        line-height: 1.6;
+                        text-indent: 40px;
+                        margin: 15px 0;
+                    }
+                    .transferCRED-preview .signature-block {
+                        margin-top: 40px;
+                        text-align: left;
+                    }
+                    .transferCRED-preview .signature-block1 {
+                        margin-top: 40px;
+                        text-align: right;
+                    }
+                    .transferCRED-preview .signature-name {
+                        font-weight: bold;
+                        font-size: 14pt;
+                        text-transform: uppercase;
+                        margin: 0;
+                    }
+                    .transferCRED-preview .signature-title {
+                        font-size: 12pt;
+                        margin: 0;
+                    }
+                    .transferCRED-preview .separator {
+                        border-top: 2px solid #000;
+                        margin: 40px 0;
+                    }
+                    .transferCRED-preview .return-slip-title {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin: 20px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .return-date {
+                        text-align: right;
+                        margin: 10px 0 20px 0;
+                    }
+                    .transferCRED-preview .return-date input {
+                        border: none;
+                        border-bottom: 1px solid #000;
+                        width: 150px;
+                        text-align: center;
+                    }
+                    .transferCRED-preview .return-address {
+                        font-size: 14pt;
+                        margin: 20px 0;
+                    }
+                    .transferCRED-preview .return-address .title {
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        margin-bottom: 5px;
+                    }
+                    .transferCRED-preview .return-address .address {
+                        margin: 0;
+                    }
+                    .transferCRED-preview .return-salutation {
+                        font-size: 14pt;
+                        margin: 20px 0 10px 0;
+                    }
+                    .transferCRED-preview .return-body {
+                        font-size: 14pt;
+                        line-height: 1.6;
+                        text-indent: 40px;
+                        margin: 15px 0;
+                    }
+                    .transferCRED-preview .input-field input {
+                        border: none;
+                        border-bottom: 1px solid #000;
+                        width: 300px;
+                        margin-left: 10px;
+                    }
+                    .transferCRED-preview .return-signature {
+                        text-align: right;
+                        margin-top: 40px;
+                    }
+                </style>
+                <div class="transferCRED-preview">
+                    <!-- Certificate Section -->
+                    <div class="header-row">
+                            <div class="headerlogo"><img src="/bcformat.png" alt="Logo" style="width:100%;height:100%"></div>
+                    </div>
+                    
+                    <div class="office-header">OFFICE OF THE SCHOOL REGISTRAR</div>
+                    <div class="date-right">Date: ${today}</div>
+                    
+                    <div class="cert-title">CERTIFICATE OF TRANSFER CREDENTIAL</div>
+                    <div class="cert-subtitle">(HONORABLE DISMISSAL)</div>
+                    
+                    <div class="salutation">TO WHOM THIS MAY CONCERN:</div>
+                    
+                    <p class="body-text">This is to certify that <b>${studentName}</b> is granted transfer credential effective today.</p>
+                    <p class="body-text">His/Her Official Transcript of Records (TOR) will be issued upon the receipt of the attached request duly accomplished by the school where he/she will transfer.</p>
+                    <div class="signature-block">
+                        <p class="signature-name">MARIA PERPETUA C. SAURA</p>
+                        <p class="signature-title">School Registrar</p>
+                    </div>
+                    <!-- Separator Line -->
+                    <div class="separator"></div>
+                    <!-- Return Slip Section -->
+                    <div class="header-row">
+                            <div class="headerlogo"><img src="/bcformat.png" alt="Logo" style="width:100%;height:100%"></div>
+                    </div>
+                    <div class="office-header">OFFICE OF THE SCHOOL REGISTRAR</div>
+                    <div class="return-slip-title">RETURN SLIP</div>
+                    <div class="return-date">
+                    </div>
+                    <div class="return-address">
+                        <div class="title">THE REGISTRAR</div>
+                        <p class="address">BENEDICTO COLLEGE</p>
+                        <p class="address">A.S. Fortuna St., Bakilid,</p>
+                        <p class="address">Mandaue City, Cebu</p>
+                    </div>
+                    
+                    <div class="return-salutation">Sir/Madam:</div>
+                    
+                    <p class="return-body">Please send us at your convenience, the Transcript of Records of <b>${studentName}</b> student of <b>${studentCourse}</b> program in your school who is temporarily enrolled with us in the College of __________________.</p>
+                    <p class="return-body">Thank you for your cooperation.</p>
+                    
+                    <div class="input-fields">
+                        <div class="input-field">
+                            <label>Name of School:_______________________</label>
+                        </div>
+                        <div class="input-field">
+                            <label>Address:__________________________</label>
+                        </div>
+                    </div>
+                    
+                     <div class="signature-block1">
+                            <div style="display:inline-block;text-align:center;">
+                                <label>__________________________</label>
+                                <p style="margin:0;text-align:center;">School Registrar</p>
+                            </div>
+                        </div>
+                </div>
+            `;
 
         default:
             return `<div style="font-family: sans-serif; padding: 20px;"><h1 style="color: #dc3545;">Template Not Available</h1><p>A template for "<strong>${request.documentType}</strong>" has not been created.</p></div>`;
@@ -554,8 +793,6 @@ function DocumentApprovalForm() {
     
     const previewRef = useRef(null);
     const selectionRef = useRef(null);
-
-    // Removed font/size UI controls per request
 
     useEffect(() => {
         const fetchRequestDetails = async () => {
@@ -583,9 +820,6 @@ function DocumentApprovalForm() {
         }
     }, [isEditing]);
 
-    // Removed local font enumeration per request
-
-    // Preserve selection when toolbar is used
     const saveSelection = () => {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
@@ -658,7 +892,21 @@ function DocumentApprovalForm() {
                             <button type="button" className="btn btn-sm btn-outline-dark me-2 text-decoration-underline" title="Underline" onClick={() => exec('underline')}>U</button>
                             <button type="button" className="btn btn-sm btn-outline-dark me-2" title="Strikethrough" onClick={() => exec('strikeThrough')}>ab</button>
                             <button type="button" className="btn btn-sm btn-outline-dark me-1" title="Subscript" onClick={() => exec('subscript')}>x<sub>2</sub></button>
-                            <button type="button" className="btn btn-sm btn-outline-dark" title="Superscript" onClick={() => exec('superscript')}>x<sup>2</sup></button>
+                            <button type="button" className="btn btn-sm btn-outline-dark me-3" title="Superscript" onClick={() => exec('superscript')}>x<sup>2</sup></button>
+
+                            {/* Alignment controls */}
+                            <button type="button" className="btn btn-sm btn-outline-dark" title="Align Left" onClick={() => exec('justifyLeft')}>
+                                <i className="fas fa-align-left"></i>
+                            </button>
+                            <button type="button" className="btn btn-sm btn-outline-dark" title="Align Center" onClick={() => exec('justifyCenter')}>
+                                <i className="fas fa-align-center"></i>
+                            </button>
+                            <button type="button" className="btn btn-sm btn-outline-dark" title="Align Right" onClick={() => exec('justifyRight')}>
+                                <i className="fas fa-align-right"></i>
+                            </button>
+                            <button type="button" className="btn btn-sm btn-outline-dark" title="Justify" onClick={() => exec('justifyFull')}>
+                                <i className="fas fa-align-justify"></i>
+                            </button>
                         </div>
                     )}
                     <div 
