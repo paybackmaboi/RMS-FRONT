@@ -115,6 +115,7 @@ function StudentRequestForm() {
                     <option value="CERTIFICATE OF GRADUATION WITH HONORS">Certificate of Graduation with Honors</option>
                     <option value="CERTIFICATE OF TRANSFER CREDENTIALS">Certificate of Transfer Credentials - Honorable Dismissal</option>
                     <option value="DIPLOMA">Diploma</option>
+                    <option value="DIPLOMA">Others (Pls. Specify)</option>
                   </select>
                 </div>
 

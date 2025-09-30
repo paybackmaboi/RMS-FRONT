@@ -2,6 +2,951 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { API_BASE_URL, getSessionToken } from '../../utils/api';
 
+// Document content generation function (extracted from DocumentApprovalModal.js)
+const generateDocumentContent = (request) => {
+    if (!request) return '';
+
+    // --- Placeholder data from old code ---
+    const personalInfo = { civilStatus: 'Single', dateOfBirth: 'January 23, 2006', placeOfBirth: 'Mandaue City, Cebu', parentGuardian: 'Maria Dela Cruz', permanentAddress: 'Sangi, Cal-oocan, Mandaue City', previousSchool: 'Mandaue City Science High School' };
+    const educationalData = { elementary: { name: 'Mabolo Elementary School', year: '2018' }, secondary: { name: 'Cebu Eastern College', year: '2022' } };
+    const gradesData = [
+        { semester: 'First Year, First Semester', year: '2024-2025', subjects: [ { code: 'IT 111', desc: 'Introduction to Computing', grade: '1.5', units: 3 }, { code: 'GE 1', desc: 'Understanding the Self', grade: '1.2', units: 3 }, { code: 'FIL 1', desc: 'Komunikasyon sa Akademikong Filipino', grade: '1.7', units: 3 }, { code: 'NSTP 1', desc: 'National Service Training Program 1', grade: 'P', units: 3 } ]},
+        { semester: 'First Year, Second Semester', year: '2024-2025', subjects: [ { code: 'IT 121', desc: 'Computer Programming 1', grade: '1.8', units: 3 }, { code: 'IT 122', desc: 'Data Structures and Algorithms', grade: '2.0', units: 3 }, { code: 'GE 5', desc: 'Purposive Communication', grade: '1.5', units: 3 }, { code: 'NSTP 2', desc: 'National Service Training Program 2', grade: 'P', units: 3 } ]}
+    ];
+    const diplomaDetails = { dean: "JAYPEE Y. ZOILO, DBA", schoolDirector: "RANULFO L. VISAYA JR., DevEdD.", registrar: "WENELITO M. LAYSON", president: "LILIAN BENEDICTO-HUAN", graduationDate: "this 26th day of May 2022", specialOrder: "No. 30-346201-0196, s. 2022 dated December 15, 2022" };
+
+    // Helper variables...
+    const studentName = request.student ? `${request.student.lastName}, ${request.student.firstName} ${request.student.middleName || ''}`.trim() : 'Juan Dela Cruz';
+    const studentIdNumber = request.student?.idNumber || 'N/A';
+    const studentCourse = request.student?.studentDetails?.course?.name || 'Bachelor of Science in Information Technology';
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const academicYear = '2024-2025';
+
+    switch (request.documentType.toUpperCase()) {
+        case 'GOOD MORAL FOR GRADUATES':
+            return `
+                <style>
+                    .good-moral-preview, .good-moral-preview * { font-family: Arial, sans-serif !important; }
+                    .good-moral-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .good-moral-preview .footer-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .good-moral-preview .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+                    .print-container {
+                    width: 8.5in;
+                    padding: 0.5in;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    }
+                    .good-moral-preview .cert-title {
+                        text-align: center;
+                        font-size: 20pt;
+                        font-weight: bold;
+                        margin: 18px 0 10px 0;
+                        letter-spacing: 2px;
+                        padding: 80px 20px 80px 20px;
+                    }
+                    .good-moral-preview .date { text-align: right; margin-top: 10px; padding-bottom: 55px; }
+                    .good-moral-preview .body-text { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .good-moral-preview .body-text1 { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .good-moral-preview .signature-block { margin-top: 80px; text-align: center; padding: 85px; }
+                </style>
+                <div class="good-moral-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATE OF GOOD MORAL CHARACTER</div>
+                            <p class="date">${today}</p>
+                            <p class="body-text">This is to certify that <b>${studentName}</b>, was graduate of the degree of <b>${studentCourse}</b> on "Date Here" with Special
+                            Order No. 50-5140101-0135 s. 2025 issued by the Commission on Higher Education on ${today}</p>
+
+                            <p class="body-text1">During his/her stay in Benedicto College, he/she did not commit any infraction against the school's
+                            rules and regulations nor was he/she involved in any immoral illegal activity that would mar his/her reputation as a person.</p>
+
+                            <p class="body-text1">This certification is issued upon the request of the above mentioned graduate for <b>${request.purpose}</b> purposes only.</p>
+                            <div class="signature-block"><p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>WENELITO M. LAYSON</b></p><p>School Registrar</p></div>
+                        </div>
+                    </div>
+                    <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                </div>
+            `;
+    case 'GOOD MORAL FOR NON-GRADUATES':
+            return `
+                <style>
+                    .good-moral-preview, .good-moral-preview * { font-family: Arial, sans-serif !important; }
+                    .good-moral-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .good-moral-preview .footer-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .good-moral-preview .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+                    .print-container {
+                    width: 8.5in;
+                    padding: 0.5in;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    }
+                    .good-moral-preview .cert-title {
+                        text-align: center;
+                        font-size: 20pt;
+                        font-weight: bold;
+                        margin: 18px 0 10px 0;
+                        letter-spacing: 2px;
+                        padding: 80px 20px 80px 20px;
+                    }
+                    .good-moral-preview .date { text-align: right; margin-top: 10px; padding-bottom: 55px; }
+                    .good-moral-preview .body-text { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .good-moral-preview .body-text1 { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .good-moral-preview .signature-block { margin-top: 80px; text-align: center; padding: 85px; }
+                </style>
+                <div class="good-moral-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATE OF GOOD MORAL CHARACTER</div>
+                            <p class="date">${today}</p>
+                            <p class="body-text">This is to certify that <b>${studentName}</b>, was enrolled in the <b>${studentCourse}</b> during the
+                            first semester of School Year Here</p>
+
+                            <p class="body-text1">During his/her stay in Benedicto College, he/she did not commit any infraction against the school's
+                            rules and regulations nor was he/she involved in any immoral illegal activity that would mar his/her reputation as a person.</p>
+
+                            <p class="body-text1">This certification is issued upon the request of the above mentioned graduate for <b>${request.purpose}</b> purposes only.</p>
+                            <div class="signature-block"><p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>WENELITO M. LAYSON</b></p><p>School Registrar</p></div>
+                        </div>
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        case 'GRADE SLIP':
+            const currentSemesterGrades = gradesData[0];
+            let totalUnits = 0;
+            const rowsHtml = currentSemesterGrades.subjects.map(sub => {
+                const units = Number(sub.units) || 0;
+                totalUnits += units;
+                const lec = units >= 4 ? 3 : units; // simple split similar to many curricula
+                const lab = units >= 4 ? units - 3 : 0;
+                return `<tr>
+                            <td class="text-center">${sub.code}</td>
+                            <td>${sub.desc}</td>
+                            <td class="text-center">${lec}</td>
+                            <td class="text-center">${lab}</td>
+                            <td class="text-center">${sub.grade}</td>
+                        </tr>`;
+            }).join('');
+            return `
+                <style>
+                    /* Force Arial across the entire grade slip content */
+                    .gradeslip-cert, .gradeslip-cert * { font-family: Arial, sans-serif !important; }
+                    /* Add generous page margins for both screen and print */
+                    .gradeslip-cert .print-container { 
+                        width: 8.5in;
+                        margin: 0 auto; 
+                        padding: 0.5in;
+                        box-sizing: border-box;
+                    }
+                    .gradeslip-cert .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 12px; box-sizing: border-box; }
+                    @media print {
+                        @page { margin: 0.5in; }
+                        .gradeslip-cert .print-container { padding: 0.5in; }
+                    }
+                    .gradeslip-cert .header-row { display: flex; align-items: center; margin-bottom: 0; }
+                    .gradeslip-cert .headerlogo img { width: 100%; height: 100%; }
+                    .gradeslip-cert .footer-row { display: flex; align-items: center; margin-bottom: 0; }
+                    .gradeslip-cert .footerlogo img { width: 100%; height: 100%; }
+                    .gradeslip-cert .cert-title { text-align: center; font-size: 20pt; font-weight: bold; margin: 18px 0 10px 0; letter-spacing: 2px; padding: 80px 20px 40px 20px; }
+                    .gradeslip-cert .program-title { text-align: center; font-weight: bold; margin: 10px 0 15px 0; }
+                    .gradeslip-cert .info { margin: 0 0 10px 0; }
+                    .gradeslip-cert .grades-table { width: 100%; border-collapse: collapse; font-size: 12pt; }
+                    .gradeslip-cert .grades-table th, .gradeslip-cert .grades-table td { border: 1px solid #000; padding: 6px 8px; }
+                    .gradeslip-cert .grades-table th { text-align: center; }
+                    .gradeslip-cert .text-center { text-align: center; }
+                    .gradeslip-cert .totals-left { margin-top: 10px; font-size: 12pt; }
+                    .gradeslip-cert .footer-note { margin-top: 15px; }
+                    .gradeslip-cert .signature-block { margin-top: 40px; text-align: center; padding: 60px 85px 85px 85px; }
+                </style>
+                <div class="gradeslip-cert">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATION</div>
+                            <p class="info"><strong>Student Name:</strong> ${studentName}</p>
+                            <p class="info"><strong>Student ID:</strong> ${studentIdNumber}</p>
+                            <p class="info"><strong>Course:</strong> ${studentCourse}</p>
+                            <p class="info"><strong>School Year / Semester:</strong> ${currentSemesterGrades.year} / ${currentSemesterGrades.semester}</p>
+                            <div class="program-title">BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY</div>
+                            <table class="grades-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject Code</th>
+                                        <th>Descriptive Title</th>
+                                        <th>Lec</th>
+                                        <th>Lab</th>
+                                        <th>Grades</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rowsHtml}</tbody>
+                            </table>
+                            <div class="totals-left"><strong>Total Units:</strong> ${totalUnits}</div>
+                            <p class="footer-note">This certification is issued upon the request of the above-mentioned student for <b>${request.purpose || 'scholarship/application'}</b> purposes only.</p>
+                            <p class="footer-note">Issued this ${today} at Mandaue City, Cebu, Philippines.</p>
+                            <div class="signature-block">
+                                <div style="display:inline-block;text-align:center;">
+                                    <p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>MARIA PERPETUA C. SAURA</b></p>
+                                    <p style="margin:0;text-align:center;">School Registrar</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        case 'GWA CERTIFICATE':
+            return `
+                <style>
+                    .gwaCert-preview, .gwaCert-preview * { font-family: Arial, sans-serif !important; }
+                    .gwaCert-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .gwaCert-preview .footer-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .gwaCert-preview .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+                    .print-container {
+                    width: 8.5in;
+                    padding: 0.5in;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    }
+                    .gwaCert-preview .cert-title {
+                        text-align: center;
+                        font-size: 20pt;
+                        font-weight: bold;
+                        margin: 18px 0 10px 0;
+                        letter-spacing: 2px;
+                        padding: 80px 20px 80px 20px;
+                    }
+                    .gwaCert-preview .body-text { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .gwaCert-preview .body-text1 { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .gwaCert-preview .signature-block { margin-top: 80px; text-align: center; padding: 85px; }
+                </style>
+                <div class="gwaCert-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATION</div>
+                            
+                            <p class="body-text">This is to certify that according to the records available in this office, <b>${studentName}</b>, was conferred the degree <b>${studentCourse}</b> 
+                            during the graduation ceremony help on "INSERT DATE HERE" with Special Order No. 50-5140101-0135 s. 2025 issued by the Commission on Higher Education on ${today}
+                            at the Benedicto College, Inc., Mandaue City, Cebu. This is to certify further that she received a <b>General Weighted Average</b> of <b>"Insert Grade Here"</b></p>
+
+                            <p class="body-text1">This certification is issued upon the request of the above mentioned graduate for <b>${request.purpose}</b> purposes only.</p>
+
+                            <p class="body-text1">Issued on the "INSERT DATE HERE", at Mandaue City,Cebu.</p>
+                            <div class="signature-block"><p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>WENELITO M. LAYSON</b></p><p>School Registrar</p></div>
+                        </div>
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        
+        case 'TOR':
+            const torCSS = `
+                .tor-preview, .tor-preview * { font-family: Arial, sans-serif !important; }
+                .tor-preview .print-container { width: 8.5in; margin: 0 auto; padding: 0.5in; box-sizing: border-box; }
+                .tor-preview .header-row { display: flex; align-items: center; margin-bottom: 0; }
+                .tor-preview .footer-row { display: flex; align-items: center; margin-top: 85px; }
+                .tor-preview .headerlogo img { width: 100%; height: 100%; }
+                .tor-preview .footerlogo img { width: 100%; height: 100%; }
+                .tor-preview .title { text-align: center; font-weight: 800; font-size: 16pt; margin: 6px 0 10px 0; letter-spacing: 1px; text-transform: uppercase; }
+                .tor-preview .meta-row { display: flex; justify-content: space-between; font-size: 10pt; margin-bottom: 6px; }
+                .tor-preview .section-title { text-align: center; font-weight: bold; font-size: 13pt; margin: 12px 0; color: #000; }
+                .tor-preview table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+                .tor-preview th, .tor-preview td { border: 1px solid #000; padding: 4px 6px; }
+                .tor-preview th { text-align: center; }
+                .tor-preview .no-border { border: none !important; }
+                .tor-preview .info-table td.label { width: 32%; white-space: nowrap; }
+                .tor-preview .name-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 4px; padding-bottom: 2px; }
+                .tor-preview .name-block { display: flex; flex-direction: column; align-items: center; text-align: center; }
+                .tor-preview .name-block .label { font-weight: bold; font-size: 9pt; }
+                .tor-preview .name-block .value { font-weight: 800; font-size: 10pt; margin-top: 2px; }
+                .tor-preview .pi-container { display: flex; gap: 12px; align-items: flex-start; }
+                .tor-preview .pi-fields { flex: 1; }
+                .tor-preview .pi-field { display: flex; gap: 6px; font-size: 10pt; margin: 2px 0; }
+                .tor-preview .pi-field .label { width: 200px; }
+                .tor-preview .separator { border-top: 2px solid #000; margin: 10px 0; }
+                .tor-preview .grades-section { page-break-inside: avoid; margin-top: 8px; }
+                .tor-preview .grading { display: flex; gap: 16px; }
+                .tor-preview .grading .col { flex: 1; display: grid; grid-template-columns: 80px 120px 1fr; column-gap: 8px; row-gap: 2px; }
+                .tor-preview .grading .cell { padding: 2px 0; font-size: 10pt; }
+                .tor-preview .grading .head { font-weight: bold; }
+                .tor-preview .notes { font-size: 9pt; margin-top: 8px; font-style: italic; }
+                .tor-preview .remarks-flex { display: flex; justify-content: space-between; margin-top: 25px; font-size: 10pt; }
+                .tor-preview .signatures { display: flex; justify-content: space-between; margin-top: 35px; }
+                .tor-preview .signatures .block { width: 45%; text-align: center; }
+                .tor-preview .signatures .label { text-align: left; font-size: 10pt; margin-bottom: 16px; }
+                .tor-preview .signatures .name { font-weight: bold; margin-top: 65px; }
+                .tor-preview .signatures .title { font-size: 8pt; margin-top: 2px; }
+                .tor-preview .footer-note { font-size: 9pt; font-style: italic; margin-top: 85px; }
+            `;
+            const torHTML = `
+                <div class="tor-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="title">OFFICIAL TRANSCRIPT OF RECORDS</div>
+                        <div class="meta-row"><div>Page 1</div><div>SCHOOL CODE: 7119</div></div>
+                        <div class="name-row">
+                            <div class="name-block">
+                                <div class="label">Last Name</div>
+                                <div class="value">${(request.student?.lastName || 'LASTNAME').toUpperCase()}</div>
+                            </div>
+                            <div class="name-block">
+                                <div class="label">First Name</div>
+                                <div class="value">${(request.student?.firstName || 'FIRSTNAME').toUpperCase()}</div>
+                            </div>
+                            <div class="name-block">
+                                <div class="label">Middle Name</div>
+                                <div class="value">${(request.student?.middleName || '').toUpperCase()}</div>
+                            </div>
+                        </div>
+                        <div class="separator"></div>
+                        <div class="section-title">PERSONAL INFORMATION</div>
+                        <div class="pi-container">
+                            <div class="pi-fields">
+                                <div class="pi-field"><div class="label">ID Number</div><div>: ${studentIdNumber}</div></div>
+                                <div class="pi-field"><div class="label">Gender</div><div>: ${request.student?.gender || ''}</div></div>
+                                <div class="pi-field"><div class="label">Civil Status</div><div>: ${personalInfo.civilStatus}</div></div>
+                                <div class="pi-field"><div class="label">Date of Birth</div><div>: ${personalInfo.dateOfBirth}</div></div>
+                                <div class="pi-field"><div class="label">Place of Birth</div><div>: ${personalInfo.placeOfBirth}</div></div>
+                                <div class="pi-field"><div class="label">Citizenship</div><div>: Filipino</div></div>
+                                <div class="pi-field"><div class="label">Parent/ Spouse/ Guardian</div><div>: ${personalInfo.parentGuardian}</div></div>
+                                <div class="pi-field"><div class="label">Permanent Address</div><div>: ${personalInfo.permanentAddress}</div></div>
+                                <div class="pi-field"><div class="label">Entrance Data to College</div><div>: CTC & GTC</div></div>
+                                <div class="pi-field"><div class="label">Course</div><div>: ${studentCourse}</div></div>
+                            </div>
+                        </div>
+                        <div class="separator"></div>
+                        <div class="section-title">EDUCATIONAL DATA</div>
+                        <table>
+                            <thead>
+                                <tr><th>COURSE</th><th>NAME & ADDRESS OF SCHOOL</th><th>DATE GRADUATED</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Elementary</td><td>${educationalData.elementary.name}</td><td>${educationalData.elementary.year}</td></tr>
+                                <tr><td>Secondary</td><td>${educationalData.secondary.name}</td><td>${educationalData.secondary.year}</td></tr>
+                                <tr><td>SHS</td><td>Cabancalan National High School</td><td>2024-2025</td></tr>
+                                <tr><td>Tertiary</td><td>Benedicto College - Mandaue City</td><td>2024-2025</td></tr>
+                                <tr><td>School Last Attended</td><td>Benedicto College - Mandaue City</td><td>2023-2025</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="separator"></div>
+                        <div class="section-title">GRADING SYSTEM</div>
+                        <div class="grading">
+                            <div class="col">
+                                <div class="cell head">GRADE</div><div class="cell head">EQUIVALENT</div><div class="cell head">REMARKS</div>
+                                <div class="cell">1.0</div><div class="cell">95-100%</div><div class="cell">Excellent</div>
+                                <div class="cell">1.1-1.5</div><div class="cell">90-94%</div><div class="cell">Superior</div>
+                                <div class="cell">1.6-2.0</div><div class="cell">85-89%</div><div class="cell">Very Good</div>
+                                <div class="cell">2.1-2.5</div><div class="cell">80-84%</div><div class="cell">Good</div>
+                                <div class="cell">2.6-2.9</div><div class="cell">76-79%</div><div class="cell">Fair</div>
+                                <div class="cell">3.0</div><div class="cell">75%</div><div class="cell">Passed</div>
+                            </div>
+                            <div class="col">
+                                <div class="cell head">GRADE</div><div class="cell head">EQUIVALENT</div><div class="cell head">REMARKS</div>
+                                <div class="cell">5.0</div><div class="cell">74% below</div><div class="cell">Failed</div>
+                                <div class="cell">W</div><div class="cell"></div><div class="cell">Withdrawn</div>
+                                <div class="cell">Dr</div><div class="cell"></div><div class="cell">Dropped</div>
+                                <div class="cell">NC</div><div class="cell"></div><div class="cell">No Credit</div>
+                            </div>
+                        </div>
+                        <div class="separator"></div>
+                        <div class="notes"><em><u>One unit of lecture is equivalent to one contact hour and one unit laboratory is equivalent to three contact hours.</u></em></div>
+                        <div class="notes"><strong>Note:</strong> This transcript is not valid if there is/are erasure(s) in the grades.</div>
+                        <div class="remarks-flex">
+                            <div><strong>REMARKS:</strong> FOR EVALUATION PURPOSES ONLY</div>
+                            <div><strong>DATE ISSUED:</strong> ${today}</div>
+                        </div>
+                        <div class="signatures">
+                            <div class="block">
+                                <div class="label">Prepared by:</div>
+                                <div class="name"><u>JUSTINE M. SUCGANG</u></div>
+                                <div class="title">Records-in-Charge</div>
+                            </div>
+                            <div class="block">
+                                <div class="label">Approved by:</div>
+                                <div class="name"><u>MARIA PERPETUA C. SAURA</u></div>
+                                <div class="title">School Registrar</div>
+                            </div>
+                        </div>
+                        <div class="footer-note">Not valid without School Dry Seal</div>
+
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return `<style>${torCSS}</style>${torHTML}`;
+
+        case 'DIPLOMA':
+            return `
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Old+Standard+TT:wght@400;700&family=Roboto:wght@400;500&display=swap');
+                    .diploma-preview { 
+                        font-family: 'Times New Roman', serif; 
+                        color: #333;
+                    }
+                    .diploma-container {
+                        width: 8.5in;
+                        margin: auto;
+                        padding: 0.5in;
+                        text-align: center;
+                        border: 10px double #666;
+                        background-color: #fcfcfc;
+                    }
+                    .diploma-header { margin-bottom: 30px; }
+                    .diploma-logo { width: 90px; margin-bottom: 10px; }
+                    .diploma-header h1 { 
+                        font-family: 'Playfair Display', serif;
+                        font-size: 28pt;
+                        letter-spacing: 2px;
+                        margin: 0;
+                    }
+                    .diploma-header .motto { font-style: italic; margin: 5px 0; }
+                    .diploma-header .address { font-size: 10pt; }
+                    
+                    .diploma-body p { margin: 15px 0; }
+                    .salutation { font-family: 'Old Standard TT', serif; font-size: 16pt; }
+                    .body-text { font-size: 12pt; line-height: 1.6; text-align: justify; }
+                    .last-paragraph { margin-top: 30px; }
+                    
+                    .student-name {
+                        font-family: 'Playfair Display', serif;
+                        font-size: 26pt;
+                        font-weight: 700;
+                        margin: 20px 0 !important;
+                    }
+                    .degree-intro { font-size: 14pt; }
+                    .degree-name {
+                        font-family: 'Old Standard TT', serif;
+                        font-size: 20pt;
+                        font-weight: 700;
+                        margin: 20px 0 !important;
+                    }
+                    .given-at { font-size: 11pt; margin-top: 30px; }
+
+                    .signature-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 20px 50px;
+                        margin-top: 50px;
+                        text-align: center;
+                    }
+                    .signature-box { padding-top: 10px; }
+                    .signature-name {
+                        font-family: 'Roboto', sans-serif;
+                        font-weight: 500;
+                        font-size: 11pt;
+                        margin-bottom: 2px !important;
+                    }
+                    .signature-title {
+                        font-size: 10pt;
+                        border-top: 1px solid #333;
+                        padding-top: 5px;
+                        margin-top: 0 !important;
+                    }
+                </style>
+                <div class="diploma-preview">
+                    <div class="diploma-container">
+                        <div class="diploma-header">
+                            <img src="/bcletterhead.png" alt="Logo" class="diploma-logo">
+                            <h1>BENEDICTO COLLEGE</h1>
+                            <p class="motto">Your Education... Our Mission</p>
+                            <p class="address">A.S. Fortuna Street, Bakilid, Mandaue City</p>
+                        </div>
+                        <div class="diploma-body">
+                            <p class="salutation">To All Persons Who May Behold These Present</p>
+                            <p class="body-text">
+                                Be it known that the Board of Directors of the Benedicto College, by authority of the Republic of the Philippines and upon the recommendation of the Academic Council, confers upon
+                            </p>
+                            <p class="student-name">${studentName.toUpperCase()}</p>
+                            <p class="degree-intro">the Degree of</p>
+                            <p class="degree-name">${studentCourse}</p>
+                            <p class="body-text">
+                                with all the rights, honors, privileges, as well as the obligations and responsibilities thereunto appertaining.
+                            </p>
+                            <p class="body-text last-paragraph">
+                                In witness whereof, the seal of Benedicto College and the signatures of the President, School Director, Department Dean and the Registrar are hereunto affixed.
+                            </p>
+                            <p class="given-at">
+                                Given in Mandaue City, Philippines, ${diplomaDetails.graduationDate}.<br>
+                                Special Order (B)(R-VII) ${diplomaDetails.specialOrder}.
+                            </p>
+                        </div>
+                        <div class="signature-grid">
+                            <div class="signature-box">
+                                <p class="signature-name">${diplomaDetails.dean}</p>
+                                <p class="signature-title">Dean, College of Business and Management</p>
+                            </div>
+                            <div class="signature-box">
+                                <p class="signature-name">${diplomaDetails.registrar}</p>
+                                <p class="signature-title">Registrar</p>
+                            </div>
+                            <div class="signature-box">
+                                <p class="signature-name">${diplomaDetails.schoolDirector}</p>
+                                <p class="signature-title">School Director</p>
+                            </div>
+                            <div class="signature-box">
+                                <p class="signature-name">${diplomaDetails.president}</p>
+                                <p class="signature-title">President</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        
+        case 'CERTIFICATE OF ENROLLMENT':
+            return `
+            <style>
+                    .certificateofEnrollment-preview, .certificateofEnrollment-preview * { font-family: Arial, sans-serif !important; }
+                    .certificateofEnrollment-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .certificateofEnrollment-preview .footer-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .certificateofEnrollment-preview .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+                    .print-container {
+                    width: 8.5in;
+                    padding: 0.5in;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    }
+                    .certificateofEnrollment-preview .cert-title {
+                        text-align: center;
+                        font-size: 20pt;
+                        font-weight: bold;
+                        margin: 18px 0 10px 0;
+                        letter-spacing: 2px;
+                        padding: 80px 20px 80px 20px;
+                    }
+                    .certificateofEnrollment-preview .date { text-align: right; margin-top: 10px; padding-bottom: 55px; }
+                    .certificateofEnrollment-preview .body-text { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .certificateofEnrollment-preview .body-text1 { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .certificateofEnrollment-preview .signature-block { margin-top: 80px; text-align: right; padding: 85px; }
+                </style>
+                <div class="certificateofEnrollment-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATION</div>
+                            
+                            <p class="body-text">This is to certify that according to our records <b>${studentName}</b>, is officially enrolled as a "Year lvl here" in the <b>${studentCourse}</b> 
+                            program of Benedicto College Inc. this 1st Semester of School Year 2025-2026.</p>
+
+
+                            <p class="body-text1">This certification is issued upon the request of the above mentioned graduate for <b>${request.purpose}</b> purposes only.</p>
+
+                            <p class="body-text1">Issued this 3rd day of September, 2025 at Mandaue City, Cebu, Philippines.</p>
+                            <div class="signature-block">
+                                <div style="display:inline-block;text-align:center;">
+                                    <p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>WENELITO M. LAYSON</b></p>
+                                    <p style="margin:0;text-align:center;">School Registrar</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>`
+
+        case 'CERTIFICATE OF GRADUATION':
+            return `
+            <style>
+                    .certificateofGraduation-preview, .certificateofGraduation-preview * { font-family: Arial, sans-serif !important; }
+                    .certificateofGraduation-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .certificateofGraduation-preview .footer-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .certificateofGraduation-preview .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+                    .print-container {
+                    width: 8.5in;
+                    padding: 0.5in;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    }
+                    .certificateofGraduation-preview .cert-title {
+                        text-align: center;
+                        font-size: 20pt;
+                        font-weight: bold;
+                        margin: 18px 0 10px 0;
+                        letter-spacing: 2px;
+                        padding: 80px 20px 80px 20px;
+                    }
+                    .certificateofGraduation-preview .body-text2 { text-align: justify; margin-top: 10px; padding-bottom: 25px; font-size: 12pt;}
+                    .certificateofGraduation-preview .body-text { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .certificateofGraduation-preview .body-text1 { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .certificateofGraduation-preview .signature-block { margin-top: 80px; text-align: right; padding: 85px; }
+                </style>
+                <div class="certificateofGraduation-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATION</div>
+                            <p class="body-text2">To Whom it May Concern:</p>
+
+                            <p class="body-text">This is to certify that <b>${studentName}</b> satisfactorily completed the four-year course
+                            in College of Computer Studies at Benedicto College, Inc. leading to the degree of <b>${studentCourse}</b> in accordance 
+                            with the policies and standards of the <b>Commission on Higher Education (CHED)</b>, and the requirements prescribed by
+                            the institution. The degree was conferred on him/her on "Date of Graduation here".</p>
+
+
+                            <p class="body-text1">This certification is issued upon the request for <b>${request.purpose}</b> purposes only.</p>
+
+                            <p class="body-text1">Given this 3rd day of September, 2025 at the Benedicto College, Inc. Mandaue City, Cebu.</p>
+                            <div class="signature-block">
+                                <div style="display:inline-block;text-align:center;">
+                                    <p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>WENELITO M. LAYSON</b></p>
+                                    <p style="margin:0;text-align:center;">School Registrar</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>`
+        case 'CERTIFICATE OF GRADUATION WITH HONORS':
+            return `
+            <style>
+                    .certificateofGraduation-preview, .certificateofGraduation-preview * { font-family: Arial, sans-serif !important; }
+                    .certificateofGraduation-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .certificateofGraduation-preview .footer-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .certificateofGraduation-preview .content-wrapper { max-width: 8.5in; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+                    .print-container {
+                    width: 8.5in;
+                    padding: 0.5in;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    }
+                    .certificateofGraduation-preview .cert-title {
+                        text-align: center;
+                        font-size: 20pt;
+                        font-weight: bold;
+                        margin: 18px 0 10px 0;
+                        letter-spacing: 2px;
+                        padding: 80px 20px 80px 20px;
+                    }
+                    .certificateofGraduation-preview .body-text { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .certificateofGraduation-preview .body-text1 { line-height: 1.8; text-indent: 40px; margin-top: 20px; font-size: 12pt; text-align: justify; }
+                    .certificateofGraduation-preview .signature-block { margin-top: 80px; text-align: right; padding: 85px; }
+                </style>
+                <div class="certificateofGraduation-preview">
+                    <div class="print-container">
+                        <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="cert-title">CERTIFICATION</div>
+
+                            <p class="body-text"><b>This is to certify</b> that according to the records available in this office,<b>${studentName}</b> was conferred
+                            the degree of <b>${studentCourse}</b> on "INSERT DATE HERE" at the Benedicto College A.S Fortuna St. Mandaue City.</p>
+
+
+                            <p class="body-text1">This is to certify further that she received an academic award for being a "INSERT LATIN HONORS HERE".</p>
+
+                            <p class="body-text1">This certification is issued upon the request of the above mentioned student for whatever legal purposes it may
+                            serve him/her.</p>
+
+                             <p class="body-text1">Issued on the "INSERT DATE HERE", at Mandaue City, Cebu.</p>
+                            <div class="signature-block">
+                                <div style="display:inline-block;text-align:center;">
+                                    <p style="border-bottom:1px solid #222;display:inline-block;padding:0 40px 2px 40px;"><b>WENELITO M. LAYSON</b></p>
+                                    <p style="margin:0;text-align:center;">School Registrar</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-row">
+                            <div class="footerlogo"><img src="/bcfooter.png" alt="Logo" style="width:100%;height:100%"></div>
+                        </div>
+                    </div>
+                </div>`
+        case 'CERTIFICATE OF TRANSFER CREDENTIALS':
+            return `
+                <style>
+                    .transferCRED-preview { 
+                        font-family: Arial, sans-serif; 
+                        width: 8.5in;
+                        margin: 0 auto;
+                        padding: 0.5in;
+                        box-sizing: border-box;
+                    }
+                    .transferCRED-preview .header-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 0px;
+                    }
+                    .transferCRED-preview .logo {
+                        width: 80px;
+                        height: 80px;
+                        margin-right: 20px;
+                    }
+                    .transferCRED-preview .college-info {
+                        flex: 1;
+                    }
+                    .transferCRED-preview .college-name {
+                        font-size: 24pt;
+                        font-weight: bold;
+                        color: #1e40af;
+                        margin: 0;
+                        letter-spacing: 1px;
+                    }
+                    .transferCRED-preview .motto {
+                        font-size: 12pt;
+                        font-style: italic;
+                        color: #1e40af;
+                        margin: 2px 0;
+                    }
+                    .transferCRED-preview .website {
+                        font-size: 10pt;
+                        color: #dc2626;
+                        margin: 0;
+                    }
+                    .transferCRED-preview .office-header {
+                        text-align: center;
+                        font-size: 16pt;
+                        font-weight: bold;
+                        margin: 20px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .date-right {
+                        text-align: right;
+                        font-size: 12pt;
+                        margin: 10px 0 20px 0;
+                    }
+                    .transferCRED-preview .cert-title {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin: 20px 0 5px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .cert-subtitle {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin: 0 0 20px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .salutation {
+                        font-size: 14pt;
+                        font-weight: bold;
+                        margin: 20px 0 10px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .body-text {
+                        font-size: 12pt;
+                        line-height: 1.6;
+                        text-indent: 40px;
+                        margin: 15px 0;
+                    }
+                    .transferCRED-preview .signature-block {
+                        margin-top: 40px;
+                        text-align: left;
+                    }
+                    .transferCRED-preview .signature-block1 {
+                        margin-top: 40px;
+                        text-align: right;
+                    }
+                    .transferCRED-preview .signature-name {
+                        font-weight: bold;
+                        font-size: 14pt;
+                        text-transform: uppercase;
+                        margin: 0;
+                    }
+                    .transferCRED-preview .signature-title {
+                        font-size: 12pt;
+                        margin: 0;
+                    }
+                    .transferCRED-preview .separator {
+                        border-top: 2px solid #000;
+                        margin: 40px 0;
+                    }
+                    .transferCRED-preview .return-slip-title {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin: 20px 0;
+                        text-transform: uppercase;
+                    }
+                    .transferCRED-preview .return-date {
+                        text-align: right;
+                        margin: 10px 0 20px 0;
+                    }
+                    .transferCRED-preview .return-date input {
+                        border: none;
+                        border-bottom: 1px solid #000;
+                        width: 150px;
+                        text-align: center;
+                    }
+                    .transferCRED-preview .return-address {
+                        font-size: 12pt;
+                        margin: 20px 0;
+                    }
+                    .transferCRED-preview .return-address .title {
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        margin-bottom: 5px;
+                    }
+                    .transferCRED-preview .return-address .address {
+                        margin: 0;
+                    }
+                    .transferCRED-preview .return-salutation {
+                        font-size: 14pt;
+                        margin: 20px 0 10px 0;
+                    }
+                    .transferCRED-preview .return-body {
+                        font-size: 12pt;
+                        line-height: 1.6;
+                        text-indent: 40px;
+                        margin: 15px 0;
+                    }
+                    .transferCRED-preview .input-field input {
+                        border: none;
+                        border-bottom: 1px solid #000;
+                        width: 300px;
+                        margin-left: 10px;
+                    }
+                    .transferCRED-preview .return-signature {
+                        text-align: right;
+                        margin-top: 40px;
+                    }
+                </style>
+                <div class="transferCRED-preview">
+                    <!-- Certificate Section -->
+                    <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                    </div>
+                    <div class="content-wrapper">
+                        <div class="office-header">OFFICE OF THE SCHOOL REGISTRAR</div>
+                        <div class="date-right">Date: ${today}</div>
+                        
+                        <div class="cert-title">CERTIFICATE OF TRANSFER CREDENTIAL</div>
+                        <div class="cert-subtitle">(HONORABLE DISMISSAL)</div>
+                        
+                        <div class="salutation">TO WHOM THIS MAY CONCERN:</div>
+                        
+                        <p class="body-text">This is to certify that <b>${studentName}</b> is granted transfer credential effective today.</p>
+                        <p class="body-text">His/Her Official Transcript of Records (TOR) will be issued upon the receipt of the attached request duly accomplished by the school where he/she will transfer.</p>
+                        <div class="signature-block">
+                            <p class="signature-name">MARIA PERPETUA C. SAURA</p>
+                            <p class="signature-title">School Registrar</p>
+                        </div>
+                    </div>
+                    <!-- Separator Line -->
+                    <div class="separator"></div>
+                    <!-- Return Slip Section -->
+                    <div class="header-row">
+                            <div class="headerlogo"><img src="/bcletterhead.png" alt="Logo" style="width:100%;height:100%"></div>
+                    </div>
+                    <div class="content-wrapper">
+                        <div class="office-header">OFFICE OF THE SCHOOL REGISTRAR</div>
+                        <div class="return-slip-title">RETURN SLIP</div>
+                        <div class="return-date">
+                        </div>
+                        <div class="return-address">
+                            <div class="title">THE REGISTRAR</div>
+                            <p class="address">BENEDICTO COLLEGE</p>
+                            <p class="address">A.S. Fortuna St., Bakilid,</p>
+                            <p class="address">Mandaue City, Cebu</p>
+                        </div>
+                        
+                        <div class="return-salutation">Sir/Madam:</div>
+                        
+                        <p class="return-body">Please send us at your convenience, the Transcript of Records of <b>${studentName}</b> student of <b>${studentCourse}</b> program in your school who is temporarily enrolled with us in the College of __________________.</p>
+                        <p class="return-body">Thank you for your cooperation.</p>
+                        
+                        <div class="input-fields">
+                            <div class="input-field">
+                                <label>Name of School:_______________________</label>
+                            </div>
+                            <div class="input-field">
+                                <label>Address:__________________________</label>
+                            </div>
+                        </div>
+                        
+                         <div class="signature-block1">
+                                <div style="display:inline-block;text-align:center;">
+                                    <label>__________________________</label>
+                                    <p style="margin:0;text-align:center;">School Registrar</p>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            `;
+
+        default:
+            return `<div style="font-family: sans-serif; padding: 20px;"><h1 style="color: #dc3545;">Template Not Available</h1><p>A template for "<strong>${request.documentType}</strong>" has not been created.</p></div>`;
+    }
+};
+
 // Simple CSS for the modal overlay and centering
 const modalStyles = `
     .modal-backdrop-custom {
@@ -102,9 +1047,9 @@ function RequestManagementView({ setDocumentModalData }) {
     };
     
     const handleReprint = (request) => {
-        const content = `<h1>Reprint: ${request.documentType}</h1>`; 
+        const content = generateDocumentContent(request);
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(`<html><head><title>Reprint</title></head><body>${content}</body><script>setTimeout(() => { window.print(); window.close(); }, 250);</script></html>`);
+        printWindow.document.write(`<html><head><title>Reprint - ${request.documentType}</title></head><body>${content}</body><script>setTimeout(() => { window.print(); window.close(); }, 250);</script></html>`);
         printWindow.document.close();
     };
 
@@ -157,25 +1102,38 @@ function RequestManagementView({ setDocumentModalData }) {
                                                 <i className="fas fa-eye"></i>
                                             </button>
                                         ) : 'N/A'}</td>
-                                        <td>
-                                            <div className="d-flex">
-                                                {req.status === 'pending' && (
-                                                    <>
-                                                        <button className="btn btn-sm btn-success me-3" onClick={() => handleApprove(req)}>
-                                                            Approve
-                                                        </button>
-                                                        <button className="btn btn-sm btn-danger" onClick={() => openRejectModal(req)}>
-                                                            Reject
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {req.status === 'ready for pick-up' && (
-                                                    <button className="btn btn-sm btn-secondary" onClick={() => handleReprint(req)} disabled={isReadOnly}>
-                                                        Reprint
+                                    <td>
+                                        <div className="d-flex">
+                                            {req.status === 'pending' && (
+                                                <>
+                                                    <button 
+                                                        className="btn btn-sm btn-success me-2" 
+                                                        title="Approve" 
+                                                        onClick={() => handleApprove(req)}
+                                                    >
+                                                        <i className="fas fa-check"></i>
                                                     </button>
-                                                )}
-                                            </div>
-                                        </td>
+                                                    <button 
+                                                        className="btn btn-sm btn-danger" 
+                                                        title="Reject" 
+                                                        onClick={() => openRejectModal(req)}
+                                                    >
+                                                        <i className="fas fa-times"></i>
+                                                    </button>
+                                                </>
+                                            )}
+                                            {req.status === 'ready for pick-up' && (
+                                                <button 
+                                                    className="btn btn-sm btn-secondary" 
+                                                    title="Reprint" 
+                                                    onClick={() => handleReprint(req)} 
+                                                    disabled={isReadOnly}
+                                                >
+                                                    <i className="fas fa-print"></i>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -12,6 +12,7 @@ import Login from './components/auth/Login';
 import StudentRequestForm from './components/student/StudentRequestForm';
 import StudentRequestTable from './components/student/StudentRequestTable';
 import StudentHomePage from './components/student/StudentHomePage';
+import StudentSidebar from './components/student/StudentSidebar';
 import Sidebar from './components/admin/Sidebar';
 import AllRegistrationsView from './components/admin/AllRegistrationsView';
 import UnenrolledRegistrationsView from './components/admin/UnenrolledRegistrationsView';
@@ -56,12 +57,20 @@ const AdminLayout = ({ onProfileClick, setStudentToEnroll }) => (
 function App() {
   const [userRole, setUserRole] = useState(getUserRole());
   const [modalImage, setModalImage] = useState(null);
-  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [documentModalData, setDocumentModalData] = useState(null);
   const [registrations, setRegistrations] = useState(createDummyRegistrations());
   const [studentToEnroll, setStudentToEnroll] = useState(null);
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [assessment, setAssessment] = useState([])
+
+   // Responsive logo switching
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 991);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const navigate = useNavigate();
 
@@ -280,81 +289,80 @@ function App() {
   return (
     <FooterProvider>
          <div id="app-wrapper">
-      {/* Student Navbar */}
+      {/* Student Navbar - Responsive logo switching */}
       {userRole === 'student' && (
-        <nav className="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom-gradient shadow-sm" style={{ minHeight: '60px', zIndex: 1040 }}>
-          <div className="container-fluid align-items-center">
-            <img src="/benedicto2.png" style={logoStyle} alt="bclogo" />
-            {/* Hamburger for mobile */}
-            <button className="navbar-toggler ms-2" type="button" style={{ border: 'none', background: 'transparent' }} onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}>
-              <span><i className="fas fa-bars fa-lg text-white"></i></span>
-            </button>
-            {/* Main menu: collapses on mobile */}
-            <div className={`collapse navbar-collapse${isHamburgerOpen ? ' show' : ''}`} id="studentNavbarMenu">
-              <ul className="navbar-nav ms-3 mb-2 mb-lg-0">
-                <li className="nav-item">
+        <>
+          <nav className="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom-gradient shadow-sm" style={{ minHeight: '60px', zIndex: 1040 }}>
+            <div className="container-fluid align-items-center p-0">
+              <div className="d-flex align-items-center w-100" style={{ gap: '8px', minWidth: 0 }}>
+                {/* Responsive logo switching */}
+                <img
+                  src={isMobile ? '/bc.png' : '/benedicto2.png'}
+                  className={`student-navbar-logo${isMobile ? ' student-navbar-logo-bc' : ''}`}
+                  alt="bclogo"
+                />
+                {/* Hamburger only on mobile */}
+                <button className="navbar-toggler d-lg-none" type="button" style={{ border: 'none', background: 'transparent', padding: '0 4px' }} onClick={() => setIsSidebarOpen(true)}>
+                  <span><i className="fas fa-bars fa-lg text-white"></i></span>
+                </button>
+                {/* Menu items for desktop/laptop */}
+                <div className="d-none d-lg-flex flex-row align-items-center ms-3">
                   <button
-                    className={`student-navbar-btn${window.location.pathname === '/student/home' ? ' active' : ''}`}
+                    className={`btn btn-link text-white${window.location.pathname === '/student/home' ? ' active' : ''}`}
                     onClick={() => navigate('/student/home')}
                   >Home</button>
-                </li>
-                <li className="nav-item">
                   <button
-                    className={`student-navbar-btn${window.location.pathname === '/student/request' ? ' active' : ''}`}
+                    className={`btn btn-link text-white${window.location.pathname === '/student/request' ? ' active' : ''}`}
                     onClick={() => navigate('/student/request')}
                   >Request</button>
-                </li>
-                <li className="nav-item">
                   <button
-                    className={`student-navbar-btn${window.location.pathname === '/student/my-request' ? ' active' : ''}`}
+                    className={`btn btn-link text-white${window.location.pathname === '/student/my-request' ? ' active' : ''}`}
                     onClick={() => navigate('/student/my-request')}
                   >My Request</button>
-                </li>
-                
-            </ul>
-            </div>
-            {/* Right side: bell and profile, hidden when hamburger is open */}
-            {!isHamburgerOpen && (
-              <div className="ms-auto d-flex align-items-center">
-                {/* --- Add the NotificationBell here --- */}
-                <NotificationBell />
-                {/* Profile Dropdown */}
-                <div className="dropdown me-3">
                   <button
-                    className="btn btn-link dropdown-toggle p-0 border-0 bg-transparent text-white"
-                    type="button"
-                    id="profileDropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    style={{ outline: 'none', boxShadow: 'none', color: '#fff' }}
-                  >
-                    <img
-                      src={localStorage.getItem('profileImage') || '/bc.png'}
-                      alt="Profile"
-                      style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #fff', background: '#eee' }}
-                    />
-                  </button>
-                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li>
-                      <button className="dropdown-item" onClick={() => navigate('/student/profile')}>
-                        <i className="fa-regular fa-user me-2"></i>
-                        Profile
-                      </button>
-                    </li>
-                    <li><hr className="dropdown-divider" /></li>
-                    <li>
-                      <button className="dropdown-item" onClick={handleLogout}>
-                        <i className="fa-solid fa-arrow-right-from-bracket fa-sm me-2"></i>
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
+                    className={`btn btn-link text-white${window.location.pathname === '/student/my-request' ? ' active' : ''}`}
+                    onClick={() => navigate('/student/my-request')}
+                  >Billing</button>
+                </div>
+                <div className="ms-auto d-flex align-items-center justify-content-center" style={{ gap: '8px', height: '40px' }}>
+                  <div className="d-flex align-items-center justify-content-center" style={{ height: '100%' }}>
+                    <NotificationBell />
+                  </div>
+                  <div className="dropdown d-flex align-items-center justify-content-center" style={{ height: '100%', marginRight: '16px' }}>
+                    <button
+                      className="btn btn-link p-0 border-0 bg-transparent text-white"
+                      type="button"
+                      id="settingsDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      style={{ outline: 'none', boxShadow: 'none', color: '#fff', minWidth: 0 }}
+                    >
+                      <i className="fa-solid fa-gear fa-lg" style={{ verticalAlign: 'middle' }}></i>
+                    </button>
+                    <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                      <li>
+                        <button className="dropdown-item" onClick={() => navigate('/student/profile')}>
+                          <i className="fa-regular fa-user me-2"></i>
+                          Profile
+                        </button>
+                      </li>
+                      <li><hr className="dropdown-divider" /></li>
+                      <li>
+                        <button className="dropdown-item" onClick={handleLogout}>
+                          <i className="fa-solid fa-arrow-right-from-bracket fa-sm me-2"></i>
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            )}
-      </div>
-    </nav>
-  )}
+            </div>
+          </nav>
+          {/* Sidebar only on mobile */}
+          <StudentSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} navigate={navigate} />
+        </>
+      )}
       {/* Admin/Accounting Navbar */}
       {(userRole === 'admin' || userRole === 'accounting') && (
         <nav className={`navbar navbar-expand-lg navbar-dark fixed-top ${userRole ? 'navbar-custom-gradient shadow-sm' : ''}`}>
@@ -366,7 +374,7 @@ function App() {
               </span>
               <div className="dropdown">
                 <button
-                  className="btn btn-link dropdown-toggle text-white"
+                  className="btn dropdown-toggle text-white"
                   type="button"
                   id="settingsDropdown"
                   data-bs-toggle="dropdown"
